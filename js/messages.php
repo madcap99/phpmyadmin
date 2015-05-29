@@ -335,6 +335,7 @@ $js_messages['strNotValidRowNumber'] = __('%d is not valid row number.');
 $js_messages['strBrowseForeignValues'] = __('Browse foreign values');
 $js_messages['strNoAutoSavedQuery'] = __('No auto-saved query');
 $js_messages['strBookmarkVariable'] = __('Variable %d:');
+$js_messages['strDisableForeignKeyChecks'] = __('Disable foreign key checks');
 
 /* For Central list of columns */
 $js_messages['pickColumn'] = __('Pick');

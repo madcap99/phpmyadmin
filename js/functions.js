@@ -1718,8 +1718,13 @@ AJAX.registerOnload('functions.js', function () {
         var sql_query  = $form.find("input[name='sql_query']").val().trim();
         var $inner_sql = $(this).parent().prev().find('code.sql');
         var old_text   = $inner_sql.html();
+        var default_fk_check_value = $form.find("input[name='default_fk_check_value']").val() == 'true';
 
         var new_content = "<textarea name=\"sql_query_edit\" id=\"sql_query_edit\">" + sql_query + "</textarea>\n";
+        new_content    += "<div><label>";
+        new_content    += "<input type=\"checkbox\" name=\"disable_foreign_keys\"";
+        new_content    += " id=\"disable_foreign_keys\"" + (default_fk_check_value ? "" : " checked=\"checked\"") + " >";
+        new_content    += PMA_messages.strDisableForeignKeyChecks + "</label></div>";
         new_content    += "<input type=\"submit\" id=\"sql_query_edit_save\" class=\"button btnSave\" value=\"" + PMA_messages.strGo + "\"/>\n";
         new_content    += "<input type=\"button\" id=\"sql_query_edit_discard\" class=\"button btnDiscard\" value=\"" + PMA_messages.strCancel + "\"/>\n";
         var $editor_area = $('div#inline_editor');
@@ -1742,15 +1747,17 @@ AJAX.registerOnload('functions.js', function () {
             codemirror_inline_editor.save();
             sql_query = codemirror_inline_editor.getValue();
         } else {
-            sql_query = $(this).prev().val();
+            sql_query = $(this).parent().find('#sql_query_edit').val();
         }
+        var disable_fk_check = $(this).parent().find('#disable_foreign_keys').is(':checked');
 
         var $form = $("a.inline_edit_sql").prev('form');
         var $fake_form = $('<form>', {action: 'import.php', method: 'post'})
                 .append($form.find("input[name=server], input[name=db], input[name=table], input[name=token]").clone())
                 .append($('<input/>', {type: 'hidden', name: 'show_query', value: 1}))
                 .append($('<input/>', {type: 'hidden', name: 'is_js_confirmed', value: 0}))
-                .append($('<input/>', {type: 'hidden', name: 'sql_query', value: sql_query}));
+                .append($('<input/>', {type: 'hidden', name: 'sql_query', value: sql_query}))
+                .append($('<input/>', {type: 'hidden', name: 'disable_foreign_keys', value: disable_fk_check ? 1 : 0}));
         if (! checkSqlQuery($fake_form[0])) {
             return false;
         }

@@ -1275,6 +1275,11 @@ class PMA_Util
                     'profiling', __('Profiling'), isset($_SESSION['profiling']), true
                 );
             }
+
+            // Pass default foreign_key_checks
+            $default_fk_check_value = $GLOBALS['dbi']->getVariable('FOREIGN_KEY_CHECKS') == 'ON';
+            $retval .= '<input type="hidden" disabled name="default_fk_check_value"'
+                . 'value="' . ($default_fk_check_value ? 'true' : 'false') . '"/>';
             $retval .= '</form>';
 
             /**
@@ -2686,12 +2691,13 @@ class PMA_Util
      * @return string                  HTML for the checkbox
      */
     public static function getCheckbox(
-        $html_field_name, $label, $checked, $onclick, $html_field_id = ''
+        $html_field_name, $label, $checked, $onclick, $html_field_id = '', $value = ''
     ) {
         return '<input type="checkbox" name="' . $html_field_name . '"'
             . ($html_field_id ? ' id="' . $html_field_id . '"' : '')
             . ($checked ? ' checked="checked"' : '')
-            . ($onclick ? ' class="autosubmit"' : '') . ' />'
+            . ($onclick ? ' class="autosubmit"' : '')
+            . ($value ? ' value="' . $value . '"' : '') . ' />'
             . '<label' . ($html_field_id ? ' for="' . $html_field_id . '"' : '')
             . '>' . $label . '</label>';
     }
@@ -3183,6 +3189,63 @@ class PMA_Util
         } else {
             return false;
         }
+    }
+
+    /**
+    * Get HTML for disable_foreign_keys checkbox
+    *
+    * @param bool $default Default value for checkbox
+    *
+    * @return string HTML for checkbox
+    */
+    public static function getDisableFKCheckbox($default = null)
+    {
+        $checked = !($GLOBALS['dbi']->getVariable('FOREIGN_KEY_CHECKS') == 'ON');
+        if ($default !== null) {
+            $checked = $default ? true : false;
+        }
+        $html = '<input type="hidden" name="disable_foreign_keys" value="0" />';
+        $html .= self::getCheckbox(
+            'disable_foreign_keys',
+            __('Disable foreign key checks'),
+            $checked,
+            false,
+            'disable_foreign_keys',
+            '1'
+        );
+        return $html;
+    }
+
+    /**
+     * Handle foreign key check request
+     *
+     * @return bool Default foreign key checks value
+     */
+    public static function handleDisableFKCheck_init()
+    {
+        $default_fk_check_value = $GLOBALS['dbi']->getVariable('FOREIGN_KEY_CHECKS') == 'ON';
+        if (isset($_REQUEST['disable_foreign_keys'])) {
+            if (!empty($_REQUEST['disable_foreign_keys'])) {
+                // Disable foreign key checks
+                $GLOBALS['dbi']->setForeignKeyCheck(false);
+            } else {
+                // Enable foreign key checks
+                $GLOBALS['dbi']->setForeignKeyCheck(true);
+            }
+        } // else do nothing, go with default
+        return $default_fk_check_value;
+    }
+
+    /**
+     * Cleanup changes done for foreign key check
+     *
+     * @param bool $default_fk_check_value
+     *
+     * @return void
+     */
+    public static function handleDisableFKCheck_cleanup($default_fk_check_value)
+    {
+        $GLOBALS['dbi']->setForeignKeyCheck($default_fk_check_value);
     }
 
     /**
