@@ -3198,11 +3198,14 @@ class PMA_Util
     *
     * @return string HTML for checkbox
     */
-    public static function getDisableFKCheckbox($default = null)
+    public static function getDisableFKCheckbox()
     {
-        $checked = !($GLOBALS['dbi']->getVariable('FOREIGN_KEY_CHECKS') == 'ON');
-        if ($default !== null) {
-            $checked = $default ? true : false;
+        if ($GLOBALS['cfg']['DefaultForeignKeyChecks'] === 'enable') {
+            $checked = false;
+        } else if ($GLOBALS['cfg']['DefaultForeignKeyChecks'] === 'disable') {
+            $checked = true;
+        } else {
+            $checked = !($GLOBALS['dbi']->getVariable('FOREIGN_KEY_CHECKS') == 'ON');
         }
         $html = '<input type="hidden" name="disable_foreign_keys" value="0" />';
         $html .= self::getCheckbox(
